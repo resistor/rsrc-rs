@@ -1,0 +1,13 @@
+[package]
+name = "rsrc-rs"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Parser for Classic Macintosh resource forks"
+homepage = "https://github.com/resistor/rsrc-rs"
+repository = "https://github.com/resistor/rsrc-rs"
+readme = "README.md"
+
+[dependencies]
+bitflags = "2.2.1"
+winnow = "0.4.4"
