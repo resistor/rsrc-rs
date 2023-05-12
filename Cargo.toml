@@ -1,6 +1,6 @@
 [package]
 name = "rsrc-rs"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "Apache-2.0"
 description = "Parser for Classic Macintosh resource forks"
@@ -10,4 +10,5 @@ readme = "README.md"
 
 [dependencies]
 bitflags = "2.2.1"
+encoding = "0.2.33"
 winnow = "0.4.4"

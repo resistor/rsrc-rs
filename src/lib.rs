@@ -10,6 +10,8 @@ use winnow::token::take;
 use winnow::IResult;
 use winnow::Parser;
 use bitflags::bitflags;
+use encoding::{Encoding, DecoderTrap};
+use encoding::all::MAC_ROMAN;
 
 bitflags! {
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -36,13 +38,13 @@ bitflags! {
 pub struct ResourceReference<'a> {
     id: u16,
     attributes: ResourceAttributes,
-    name: Option<&'a str>,
+    name: Option<String>,
     data: &'a [u8],
 }
 
 #[derive(Debug)]
 struct ResourceType<'a> {
-    name: &'a str,
+    name: String,
     resources: Vec<ResourceReference<'a>>,
 }
 
@@ -66,7 +68,7 @@ fn rsrc_reference_parser<'a>(
         let name = if name_offset != 0xFFFF {
             let name_rest = &rsrc_name_list[name_offset as usize..];
             let (_, name_bytes) = length_data(u8).parse_next(name_rest)?;
-            Some(std::str::from_utf8(name_bytes).unwrap())
+            MAC_ROMAN.decode(name_bytes, DecoderTrap::Strict).ok()
         } else {
             None
         };
@@ -97,7 +99,7 @@ fn rsrc_type_parser<'a>(rsrc_name_list: &'a [u8], rsrc_data: &'a [u8]) -> impl F
         let name_vec =
             v.1.into_iter()
                 .map(|t| {
-                    let name = std::str::from_utf8(t.0).unwrap();
+                    let name = MAC_ROMAN.decode(t.0, DecoderTrap::Strict).unwrap();
                     let lo = t.2 as usize;
                     let hi = lo + 12 * (t.1 as usize);
                     let reference = &input[lo..hi];
