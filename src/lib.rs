@@ -91,7 +91,7 @@ fn rsrc_reference_parser<'a>(
 fn rsrc_type_parser<'a>(rsrc_name_list: &'a [u8], rsrc_data: &'a [u8]) -> impl Fn(&'a [u8]) -> IResult<&'a [u8], Vec<ResourceType<'a>>> {
     |input: &'a [u8]| {
         let v: (_, Vec<_>) = length_count(
-            u16(Endianness::Big),
+            u16(Endianness::Big).map(|v| v + 1),
             (take(4usize), u16(Endianness::Big), u16(Endianness::Big)),
         )
         .parse_next(input)?;
