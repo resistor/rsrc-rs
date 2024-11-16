@@ -101,9 +101,9 @@ fn rsrc_type_parser<'a>(rsrc_name_list: &'a [u8], rsrc_data: &'a [u8]) -> impl F
                 .map(|t| {
                     let name = MAC_ROMAN.decode(t.0, DecoderTrap::Strict).unwrap();
                     let lo = t.2 as usize;
-                    let hi = lo + 12 * (t.1 as usize);
+                    let hi = lo + 12 * (t.1 as usize + 1);
                     let reference = &input[lo..hi];
-                    let resources = count(rsrc_reference_parser(rsrc_name_list, rsrc_data), t.1 as usize).parse_next(reference).unwrap().1;
+                    let resources = count(rsrc_reference_parser(rsrc_name_list, rsrc_data), t.1 as usize + 1).parse_next(reference).unwrap().1;
                     ResourceType { name, resources}
                 })
                 .collect();
