@@ -155,3 +155,25 @@ pub fn rsrc_parser<'a>(input: &'a [u8]) -> IResult<&'a [u8], ResourceFork<'a>> {
 
     Ok((&input[rsrc_map_hi..], resource))
 }
+
+#[cfg(test)]
+mod test {
+    use crate::rsrc_parser;
+
+    #[test]
+    fn test_number_resource_types() {
+        let buffer = include_bytes!("../sample.rsrc");
+        let (_, resources) = rsrc_parser(buffer).unwrap();
+
+        assert_eq!(resources.resources.len(), 2);
+    }
+
+    #[test]
+    fn test_number_of_entries_per_type() {
+        let buffer = include_bytes!("../sample.rsrc");
+        let (_, resources) = rsrc_parser(buffer).unwrap();
+
+        assert_eq!(resources.resources[0].resources.len(), 2);
+        assert_eq!(resources.resources[1].resources.len(), 2);
+    }
+}
