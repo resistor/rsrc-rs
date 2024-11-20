@@ -91,7 +91,7 @@ fn rsrc_reference_parser<'a>(
 fn rsrc_type_parser<'a>(rsrc_name_list: &'a [u8], rsrc_data: &'a [u8]) -> impl Fn(&'a [u8]) -> IResult<&'a [u8], Vec<ResourceType<'a>>> {
     |input: &'a [u8]| {
         let v: (_, Vec<_>) = length_count(
-            u16(Endianness::Big),
+            u16(Endianness::Big).map(|v| v + 1),
             (take(4usize), u16(Endianness::Big), u16(Endianness::Big)),
         )
         .parse_next(input)?;
@@ -101,9 +101,9 @@ fn rsrc_type_parser<'a>(rsrc_name_list: &'a [u8], rsrc_data: &'a [u8]) -> impl F
                 .map(|t| {
                     let name = MAC_ROMAN.decode(t.0, DecoderTrap::Strict).unwrap();
                     let lo = t.2 as usize;
-                    let hi = lo + 12 * (t.1 as usize);
+                    let hi = lo + 12 * (t.1 as usize + 1);
                     let reference = &input[lo..hi];
-                    let resources = count(rsrc_reference_parser(rsrc_name_list, rsrc_data), t.1 as usize).parse_next(reference).unwrap().1;
+                    let resources = count(rsrc_reference_parser(rsrc_name_list, rsrc_data), t.1 as usize + 1).parse_next(reference).unwrap().1;
                     ResourceType { name, resources}
                 })
                 .collect();
@@ -154,4 +154,26 @@ pub fn rsrc_parser<'a>(input: &'a [u8]) -> IResult<&'a [u8], ResourceFork<'a>> {
     let (_, resource) = rsrc_map_parser(resource_map, resource_data)?;
 
     Ok((&input[rsrc_map_hi..], resource))
+}
+
+#[cfg(test)]
+mod test {
+    use crate::rsrc_parser;
+
+    #[test]
+    fn test_number_resource_types() {
+        let buffer = include_bytes!("../sample.rsrc");
+        let (_, resources) = rsrc_parser(buffer).unwrap();
+
+        assert_eq!(resources.resources.len(), 2);
+    }
+
+    #[test]
+    fn test_number_of_entries_per_type() {
+        let buffer = include_bytes!("../sample.rsrc");
+        let (_, resources) = rsrc_parser(buffer).unwrap();
+
+        assert_eq!(resources.resources[0].resources.len(), 2);
+        assert_eq!(resources.resources[1].resources.len(), 2);
+    }
 }
